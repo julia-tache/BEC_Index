@@ -1,0 +1,78 @@
+---
+title: "The BEC Index"
+output: html_document
+date: "2025-04-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load packages}
+
+library(tidyverse)
+library(reshape2)
+
+```
+
+
+```{r data}
+
+BEC <- data.frame(Month_Year = c("2024-03-01", "2024-04-01", "2024-05-01", "2024-06-01", "2024-07-01", "2024-08-01", "2024-09-01", "2024-10-01", "2024-11-01", "2024-12-01", "2025-01-01", "2025-02-01", "2025-03-01"),
+           Bread = c(1.997, 1.998, 1.971, 1.973, 1.975, 1.951, 1.976, 1.937, 1.916, 1.912, 1.925, 1.925, 1.88),
+           Bacon = c(6.609, 6.637, 6.818, 6.827, 6.883, 6.785, 6.955, 6.869, 6.843, 6.915, 7.044, 6.798, 6.978),
+           Egg = c(2.992, 2.864, 2.699, 2.715, 3.08, 3.204, 3.821, 3.37, 3.649, 4.146, 4.953, 5.897, 6.227),
+           Cheese = c(4.854, 4.776, 4.819, 4.943, 4.874, 4.841, 4.951, 5.059, 4.941, 4.983, 5.058, 5.026, 4.946))
+
+BEC$Bread <- BEC$Bread * 0.1 # 2 slices, or about 1/10 of a loaf of bread
+# assuming 1 loaf of bread = 1lb = 20 slices
+BEC$Bacon <- BEC$Bacon * 0.125 # 1/8 pound of bacon, about 2 slices
+BEC$Egg <- BEC$Egg / 6 # 2 eggs
+BEC$Cheese <- BEC$Cheese * 0.125 # roughly 2 ounces or 1/8 pound of cheese
+
+BEC$Month_Year <- as.Date(BEC$Month_Year)
+
+BEC$Month_Year <- format(BEC$Month_Year, "%b %y")
+
+BEC_graph <- melt(BEC, id.vars = "Month_Year")
+
+```
+
+```{r barplot}
+
+BEC_graph$Month_Year <- factor(BEC$Month_Year, levels = c("Mar 24", "Apr 24", "May 24", "Jun 24", "Jul 24", "Aug 24", "Sep 24", "Oct 24", "Nov 24", "Dec 24", "Jan 25", "Feb 25", "Mar 25"))
+
+BEC_graph %>%
+  ggplot(aes(x = Month_Year, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "stack") +
+  annotate("text", x = 1, y = 2.3, label = "$2.13", size = 4, fontface = "bold", family = "Georgia", hjust = 0.55) +
+  annotate("text", x = 13, y = 2.9, label = "$2.72", size = 4, fontface = "bold", family = "Georgia", hjust = 0.55) +
+  scale_fill_manual(values = c("#C4A484", "#f65656", "#fef65b", "#FFCD66")) +
+  ylim(0, 3) +
+  scale_y_continuous(breaks = c(0, .5, 1, 1.5, 2, 2.5), labels = scales::dollar_format()) + 
+  ggtitle("\nThe BEC Index") +
+  labs(subtitle = "The average cost of making a Bacon, Egg, and\nAmerican Cheese sandwich, March 2024 to March 2025", 
+       caption = "Source: Bureau of Labor Statistics CPI Data | github: julia-tache") +
+  theme(plot.background = element_rect(fill = "#F5F5F5", color = NA),
+        plot.margin = margin(0.25, 0.25, 0.25, 0.6, "cm"),
+        panel.background = element_rect(fill = "#F5F5F5", color = NA),
+        panel.grid.major = element_line(color = "#F5F5F5"),
+        panel.grid.minor = element_line(color = "#F5F5F5"),
+        plot.title = element_text(size = 20, face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(size = 14, hjust = 0.5, face = "italic"),
+        plot.caption = element_text(size = 10, face = "italic", hjust = 0.5),
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 9),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 12, hjust = 1),
+        axis.ticks = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.background = element_rect(fill = "#F5F5F5"),
+        text = element_text(family = "Georgia", size = 13))
+  
+ggsave("BEC_Index.png", height = 5, width = 8)
+
+```
+
+
